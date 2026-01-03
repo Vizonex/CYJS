@@ -1,12 +1,13 @@
 from libc.stdint cimport int16_t as int16_t
 from libc.stdint cimport int32_t as int32_t
 from libc.stdint cimport int64_t as int64_t
+from libc.stdint cimport uint8_t as uint8_t
 from libc.stdint cimport uint16_t as uint16_t
 from libc.stdint cimport uint32_t as uint32_t
 from libc.stdint cimport uint64_t as uint64_t
-from libc.stdint cimport uint8_t as uint8_t
 from libc.stdint cimport uintptr_t as uintptr_t
 from libc.stdio cimport FILE as FILE
+
 
 cdef extern from "quickjs.h" nogil:
     enum pxdgen_anon_toplevel_0:
@@ -26,34 +27,32 @@ cdef extern from "quickjs.h" nogil:
         JS_TAG_EXCEPTION = 6
         JS_TAG_SHORT_BIG_INT = 7
         JS_TAG_FLOAT64 = 8
-    struct JSClass:
+
+    ctypedef struct JSClass:
         pass
-    struct JSModuleDef:
+    ctypedef struct JSModuleDef:
         pass
-    struct JSGCObjectHeader:
+    ctypedef struct JSGCObjectHeader:
         pass
-    struct JSContext:
+    ctypedef struct JSContext:
         pass
-    struct JSObject:
+    ctypedef struct JSObject:
         pass
-    struct JSRuntime:
+    ctypedef struct JSRuntime:
         pass
-    ctypedef JSRuntime JSRuntime
-    ctypedef JSContext JSContext
-    ctypedef JSObject JSObject
-    ctypedef JSClass JSClass
+    
     ctypedef uint32_t JSClassID
     ctypedef uint32_t JSAtom
-    union JSValueUnion:
+    ctypedef union JSValueUnion:
         int32_t int32
         double float64
         void* ptr
         int32_t short_big_int
-    ctypedef JSValueUnion JSValueUnion
-    struct JSValue:
+    
+    ctypedef struct JSValue:
         JSValueUnion u
         int64_t tag
-    ctypedef JSValue JSValue
+    
     JSValue __JS_NewFloat64(double)
     JSValue __JS_NewShortBigInt(JSContext*, int64_t)
     bint JS_VALUE_IS_NAN(JSValue)
@@ -61,15 +60,15 @@ cdef extern from "quickjs.h" nogil:
     ctypedef JSValue (*JSCFunctionMagic)(JSContext*, JSValue, int, JSValue*, int) noexcept with gil
     ctypedef JSValue (*JSCFunctionData)(JSContext*, JSValue, int, JSValue*, int, JSValue*) noexcept with gil
     ctypedef JSValue (*JSCClosure)(JSContext*, JSValue, int, JSValue*, int, void*) noexcept with gil
-    struct JSMallocFunctions:
+    ctypedef struct JSMallocFunctions:
         void* (*js_calloc)(void*, size_t, size_t)
         void* (*js_malloc)(void*, size_t)
         void (*js_free)(void*, void*)
         void* (*js_realloc)(void*, void*, size_t)
         size_t (*js_malloc_usable_size)(const void*)
-    ctypedef JSMallocFunctions JSMallocFunctions
+    
     ctypedef void (*JSRuntimeFinalizer)(JSRuntime*, void*) with gil
-    ctypedef JSGCObjectHeader JSGCObjectHeader
+
     JSRuntime* JS_NewRuntime()
     void JS_SetRuntimeInfo(JSRuntime*, const char*)
     void JS_SetMemoryLimit(JSRuntime*, size_t)
@@ -84,7 +83,7 @@ cdef extern from "quickjs.h" nogil:
     void* JS_GetRuntimeOpaque(JSRuntime*)
     void JS_SetRuntimeOpaque(JSRuntime*, void*)
     int JS_AddRuntimeFinalizer(JSRuntime*, JSRuntimeFinalizer*, void*)
-    ctypedef void JS_MarkFunc(JSRuntime*, JSGCObjectHeader*)
+    ctypedef void (*JS_MarkFunc)(JSRuntime*, JSGCObjectHeader*)
     void JS_MarkValue(JSRuntime*, JSValue, JS_MarkFunc*)
     void JS_RunGC(JSRuntime*)
     bint JS_IsLiveObject(JSRuntime*, JSValue)
@@ -132,7 +131,7 @@ cdef extern from "quickjs.h" nogil:
     void* js_mallocz(JSContext*, size_t)
     char* js_strdup(JSContext*, const char*)
     char* js_strndup(JSContext*, const char*, size_t)
-    struct JSMemoryUsage:
+    ctypedef struct JSMemoryUsage:
         int64_t malloc_size
         int64_t malloc_limit
         int64_t memory_used_size
@@ -159,7 +158,7 @@ cdef extern from "quickjs.h" nogil:
         int64_t fast_array_elements
         int64_t binary_object_count
         int64_t binary_object_size
-    ctypedef JSMemoryUsage JSMemoryUsage
+    
     void JS_ComputeMemoryUsage(JSRuntime*, JSMemoryUsage*)
     void JS_DumpMemoryUsage(FILE*, JSMemoryUsage*, JSRuntime*)
     
@@ -178,17 +177,17 @@ cdef extern from "quickjs.h" nogil:
     const char* JS_AtomToCStringLen(JSContext*, size_t*, JSAtom)
     const char* JS_AtomToCString(JSContext*, JSAtom)
     JSAtom JS_ValueToAtom(JSContext*, JSValue)
-    struct JSPropertyEnum:
+    ctypedef struct JSPropertyEnum:
         bint is_enumerable
         JSAtom atom
-    ctypedef JSPropertyEnum JSPropertyEnum
-    struct JSPropertyDescriptor:
+    
+    ctypedef struct JSPropertyDescriptor:
         int flags
         JSValue value
         JSValue getter
         JSValue setter
-    ctypedef JSPropertyDescriptor JSPropertyDescriptor
-    struct JSClassExoticMethods:
+    
+    ctypedef struct JSClassExoticMethods:
         int (*get_own_property)(JSContext*, JSPropertyDescriptor*, JSValue, JSAtom)
         int (*get_own_property_names)(JSContext*, JSPropertyEnum**, uint32_t*, JSValue)
         int (*delete_property)(JSContext*, JSValue, JSAtom)
@@ -196,23 +195,23 @@ cdef extern from "quickjs.h" nogil:
         int (*has_property)(JSContext*, JSValue, JSAtom)
         JSValue (*get_property)(JSContext*, JSValue, JSAtom, JSValue)
         int (*set_property)(JSContext*, JSValue, JSAtom, JSValue, JSValue, int)
-    ctypedef JSClassExoticMethods JSClassExoticMethods
-    ctypedef void JSClassFinalizer(JSRuntime*, JSValue)
-    ctypedef void JSClassGCMark(JSRuntime*, JSValue, JS_MarkFunc*)
-    ctypedef JSValue JSClassCall(JSContext*, JSValue, JSValue, int, JSValue*, int)
-    struct JSClassDef:
+    
+    ctypedef void (*JSClassFinalizer)(JSRuntime*, JSValue)
+    ctypedef void (*JSClassGCMark)(JSRuntime*, JSValue, JS_MarkFunc*)
+    ctypedef JSValue (*JSClassCall)(JSContext*, JSValue, JSValue, int, JSValue*, int)
+    ctypedef struct JSClassDef:
         const char* class_name
         JSClassFinalizer* finalizer
         JSClassGCMark* gc_mark
         JSClassCall* call
         JSClassExoticMethods* exotic
-    ctypedef JSClassDef JSClassDef
-    struct JSEvalOptions:
+    
+    ctypedef struct JSEvalOptions:
         int version
         int eval_flags
         const char* filename
         int line_num
-    ctypedef JSEvalOptions JSEvalOptions
+    
     JSClassID JS_NewClassID(JSRuntime*, JSClassID*)
     JSClassID JS_GetClassID(JSValue)
     int JS_NewClass(JSRuntime*, JSClassID, JSClassDef*)
@@ -332,6 +331,8 @@ cdef extern from "quickjs.h" nogil:
     int JS_SetLength(JSContext*, JSValue, int64_t)
     int JS_SealObject(JSContext*, JSValue)
     int JS_FreezeObject(JSContext*, JSValue)
+
+
     int JS_GetOwnPropertyNames(JSContext*, JSPropertyEnum**, uint32_t*, JSValue, int)
     int JS_GetOwnProperty(JSContext*, JSPropertyDescriptor*, JSValue, JSAtom)
     void JS_FreePropertyEnum(JSContext*, JSPropertyEnum*, uint32_t)
@@ -358,14 +359,14 @@ cdef extern from "quickjs.h" nogil:
     JSValue JS_ParseJSON(JSContext*, const char*, size_t, const char*)
     JSValue JS_UNDEFINED
     JSValue JS_JSONStringify(JSContext*, JSValue, JSValue, JSValue)
-    ctypedef void JSFreeArrayBufferDataFunc(JSRuntime*, void*, void*)
+    ctypedef void (*JSFreeArrayBufferDataFunc)(JSRuntime*, void*, void*)
     JSValue JS_NewArrayBuffer(JSContext*, uint8_t*, size_t, JSFreeArrayBufferDataFunc*, void*, bint)
     JSValue JS_NewArrayBufferCopy(JSContext*, uint8_t*, size_t)
     void JS_DetachArrayBuffer(JSContext*, JSValue)
     uint8_t* JS_GetArrayBuffer(JSContext*, size_t*, JSValue)
     bint JS_IsArrayBuffer(JSValue)
     uint8_t* JS_GetUint8Array(JSContext*, size_t*, JSValue)
-    enum JSTypedArrayEnum:
+    ctypedef enum JSTypedArrayEnum:
         JS_TYPED_ARRAY_UINT8C = 0
         JS_TYPED_ARRAY_INT8 = 1
         JS_TYPED_ARRAY_UINT8 = 2
@@ -378,36 +379,36 @@ cdef extern from "quickjs.h" nogil:
         JS_TYPED_ARRAY_FLOAT16 = 9
         JS_TYPED_ARRAY_FLOAT32 = 10
         JS_TYPED_ARRAY_FLOAT64 = 11
-    ctypedef JSTypedArrayEnum JSTypedArrayEnum
+    
     JSValue JS_NewTypedArray(JSContext*, int, JSValue*, JSTypedArrayEnum)
     JSValue JS_GetTypedArrayBuffer(JSContext*, JSValue, size_t*, size_t*, size_t*)
     JSValue JS_NewUint8Array(JSContext*, uint8_t*, size_t, JSFreeArrayBufferDataFunc*, void*, bint)
     int JS_GetTypedArrayType(JSValue)
     JSValue JS_NewUint8ArrayCopy(JSContext*, uint8_t*, size_t)
-    struct JSSharedArrayBufferFunctions:
+    ctypedef struct JSSharedArrayBufferFunctions:
         void* (*sab_alloc)(void*, size_t)
         void (*sab_free)(void*, void*)
         void (*sab_dup)(void*, void*)
         void* sab_opaque
-    ctypedef JSSharedArrayBufferFunctions JSSharedArrayBufferFunctions
+    
     void JS_SetSharedArrayBufferFunctions(JSRuntime*, JSSharedArrayBufferFunctions*)
-    enum JSPromiseStateEnum:
+    ctypedef enum JSPromiseStateEnum:
         JS_PROMISE_NOT_A_PROMISE = -1
         JS_PROMISE_PENDING = 0
         JS_PROMISE_FULFILLED = 1
         JS_PROMISE_REJECTED = 2
-    ctypedef JSPromiseStateEnum JSPromiseStateEnum
+    
     JSValue JS_NewPromiseCapability(JSContext*, JSValue*)
     JSPromiseStateEnum JS_PromiseState(JSContext*, JSValue)
     JSValue JS_PromiseResult(JSContext*, JSValue)
     bint JS_IsPromise(JSValue)
     JSValue JS_NewSymbol(JSContext*, const char*, bint)
-    enum JSPromiseHookType:
+    ctypedef enum JSPromiseHookType:
         JS_PROMISE_HOOK_INIT = 0
         JS_PROMISE_HOOK_BEFORE = 1
         JS_PROMISE_HOOK_AFTER = 2
         JS_PROMISE_HOOK_RESOLVE = 3
-    ctypedef JSPromiseHookType JSPromiseHookType
+    
     ctypedef void (*JSPromiseHook)(JSContext*, JSPromiseHookType, JSValue, JSValue, void*)
     void JS_SetPromiseHook(JSRuntime*, JSPromiseHook, void*)
     ctypedef void (*JSHostPromiseRejectionTracker)(JSContext*, JSValue, JSValue, bint, void*)
@@ -416,21 +417,21 @@ cdef extern from "quickjs.h" nogil:
     void JS_SetInterruptHandler(JSRuntime*, JSInterruptHandler*, void*)
     void JS_SetCanBlock(JSRuntime*, bint)
     void JS_SetIsHTMLDDA(JSContext*, JSValue)
-    ctypedef JSModuleDef JSModuleDef
+    
     ctypedef char* (*JSModuleNormalizeFunc)(JSContext*, const char*, const char*, void*)
     ctypedef JSModuleDef* (*JSModuleLoaderFunc)(JSContext*, const char*, void*)
     void JS_SetModuleLoaderFunc(JSRuntime*, JSModuleNormalizeFunc*, JSModuleLoaderFunc*, void*)
     JSValue JS_GetImportMeta(JSContext*, JSModuleDef*)
     JSAtom JS_GetModuleName(JSContext*, JSModuleDef*)
     JSValue JS_GetModuleNamespace(JSContext*, JSModuleDef*)
-    ctypedef JSValue (*JSJobFunc)(JSContext*, int, JSValue*)
+    ctypedef JSValue (*JSJobFunc)(JSContext*, int, JSValue*) noexcept with gil
     int JS_EnqueueJob(JSContext*, JSJobFunc*, int, JSValue*)
     bint JS_IsJobPending(JSRuntime*)
     int JS_ExecutePendingJob(JSRuntime*, JSContext**)
-    struct JSSABTab:
+    ctypedef struct JSSABTab:
         uint8_t** tab
         size_t len
-    ctypedef JSSABTab JSSABTab
+    
     uint8_t* JS_WriteObject(JSContext*, size_t*, JSValue, int)
     uint8_t* JS_WriteObject2(JSContext*, size_t*, JSValue, int, JSSABTab*)
     JSValue JS_ReadObject(JSContext*, uint8_t*, size_t, int)
@@ -439,7 +440,7 @@ cdef extern from "quickjs.h" nogil:
     int JS_ResolveModule(JSContext*, JSValue)
     JSAtom JS_GetScriptOrModuleName(JSContext*, int)
     JSValue JS_LoadModule(JSContext*, const char*, const char*)
-    enum JSCFunctionEnum:
+    ctypedef enum JSCFunctionEnum:
         JS_CFUNC_generic = 0
         JS_CFUNC_generic_magic = 1
         JS_CFUNC_constructor = 2
@@ -453,8 +454,8 @@ cdef extern from "quickjs.h" nogil:
         JS_CFUNC_getter_magic = 10
         JS_CFUNC_setter_magic = 11
         JS_CFUNC_iterator_next = 12
-    ctypedef JSCFunctionEnum JSCFunctionEnum
-    union JSCFunctionType:
+    
+    ctypedef union JSCFunctionType:
         JSCFunction* generic
         JSValue (*generic_magic)(JSContext*, JSValue, int, JSValue*, int)
         JSCFunction* constructor
@@ -467,7 +468,7 @@ cdef extern from "quickjs.h" nogil:
         JSValue (*getter_magic)(JSContext*, JSValue, int)
         JSValue (*setter_magic)(JSContext*, JSValue, JSValue, int)
         JSValue (*iterator_next)(JSContext*, JSValue, int, JSValue*, int*, int)
-    ctypedef JSCFunctionType JSCFunctionType
+    
     JSValue JS_NewCFunction2(JSContext*, JSCFunction*, const char*, int, JSCFunctionEnum, int)
     JSValue JS_NewCFunction3(JSContext*, JSCFunction*, const char*, int, JSCFunctionEnum, int, JSValue)
     JSValue JS_NewCFunctionData(JSContext*, JSCFunctionData*, int, int, int, JSValue*)
@@ -500,13 +501,13 @@ cdef extern from "quickjs.h" nogil:
         int64_t i64
         uint64_t u64
         double f64
-    struct JSCFunctionListEntry:
+    ctypedef struct JSCFunctionListEntry:
         const char* name
         uint8_t prop_flags
         uint8_t def_type
         int16_t magic
         pxdgen_anon_JSCFunctionListEntry_0 u
-    ctypedef JSCFunctionListEntry JSCFunctionListEntry
+    
     int JS_SetPropertyFunctionList(JSContext*, JSValue, JSCFunctionListEntry*, int)
     ctypedef int (*JSModuleInitFunc)(JSContext*, JSModuleDef*)
     JSModuleDef* JS_NewCModule(JSContext*, const char*, JSModuleInitFunc*)
@@ -517,6 +518,33 @@ cdef extern from "quickjs.h" nogil:
     const char* JS_GetVersion()
     uintptr_t js_std_cmd(int, ...)
 
-    # Pre-defined
+    # Pre-defined due to way macros work
     int32_t JS_VALUE_GET_TAG(JSValue v)
-    
+    int32_t JS_VALUE_GET_INT(JSValue v)
+    double JS_VALUE_GET_FLOAT64(JSValue v)
+    JSValue JS_MKVAL(int32_t tag, int val)
+    JSValue JS_NULL
+
+    int JS_EVAL_TYPE_GLOBAL "JS_EVAL_TYPE_GLOBAL" # global code (default)
+    int JS_EVAL_TYPE_MODULE "JS_EVAL_TYPE_MODULE"# module code
+    int JS_EVAL_TYPE_DIRECT "JS_EVAL_TYPE_DIRECT" # direct call (internal use)
+    int JS_EVAL_TYPE_INDIRECT "JS_EVAL_TYPE_INDIRECT" # indirect call (internal use)
+    int JS_EVAL_TYPE_MASK "JS_EVAL_TYPE_MASK"
+    int JS_EVAL_FLAG_STRICT "JS_EVAL_FLAG_STRICT"# force 'strict' mode
+    int JS_EVAL_FLAG_UNUSED "JS_EVAL_FLAG_UNUSED" # unused
+    # # compile but do not run. The result is an object with a
+    #    JS_TAG_FUNCTION_BYTECODE or JS_TAG_MODULE tag. It can be executed
+    #    with JS_EvalFunction().
+    int JS_EVAL_FLAG_COMPILE_ONLY "JS_EVAL_FLAG_COMPILE_ONLY"
+    # # don't include the stack frames before this eval in the Error() backtraces
+    int JS_EVAL_FLAG_BACKTRACE_BARRIER "JS_EVAL_FLAG_BACKTRACE_BARRIER"
+    # # allow top-level await in normal script. JS_Eval() returns a
+    #    promise. Only allowed with JS_EVAL_TYPE_GLOBAL
+    int JS_EVAL_FLAG_ASYNC "JS_EVAL_FLAG_ASYNC"
+
+    int JS_GPN_SET_ENUM
+    int JS_GPN_STRING_MASK
+    int JS_GPN_SYMBOL_MASK
+    int JS_GPN_PRIVATE_MASK
+    int JS_GPN_ENUM_ONLY
+

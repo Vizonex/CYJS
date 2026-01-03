@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h> // FILE*
 #include <inttypes.h> // PRId64
 
+
 #include "Python.h"
 #include "quickjs.h"
 #include "cutils.h" // Quickjs's cutils (This is needed) I will throw issue on their end if I can't access this.
@@ -108,7 +109,12 @@ static const JSMallocFunctions py_malloc_funcs = {
 /// @param opaque parent object (Normally this would be the class wrapper)
 /// @return JSRuntime if all was successful otherwise this will show up as Null.
 static JSRuntime* CYJS_NewRuntime(void* opaque){
-    return JS_NewRuntime2(&py_malloc_funcs, opaque);
+    JSRuntime* rt = JS_NewRuntime2(&py_malloc_funcs, opaque);
+    /* it's a bit faster to throw an exception here with only needing
+    raise when runtime is NULL */
+    if (rt == NULL)
+        PyErr_NoMemory();
+    return rt;
 }
 
 
@@ -218,6 +224,11 @@ cyjs_release_buffer(Py_buffer *view) {
     else {
         Py_CLEAR(view->obj);
     }
+}
+
+
+JSValue CYJS_ThrowException(JSContext* ctx, const char* msg){
+    return JS_ThrowPlainError(ctx, msg);
 }
 
 
