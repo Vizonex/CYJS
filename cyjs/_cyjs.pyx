@@ -1,3 +1,4 @@
+# cython: freethreading_compatible = True
 from .quickjs cimport *
 from cpython.bytes cimport PyBytes_FromStringAndSize
 from cpython.unicode cimport PyUnicode_FromString, PyUnicode_FromStringAndSize

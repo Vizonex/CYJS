@@ -1,3 +1,5 @@
+# cython: freethreading_compatible = True
+
 cimport cython
 from libc.stdint cimport int64_t
 
