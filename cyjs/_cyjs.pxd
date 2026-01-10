@@ -14,6 +14,32 @@ cdef extern from "bridge.h":
     int cyjs_get_buffer(object, Py_buffer*) except -1
     void cyjs_release_buffer(Py_buffer* view)
 
+    JSValue CYJS_ThrowException(JSContext* ctx, const char* msg)
+    void CYJS_CreateJSClassDef(
+        object obj,
+        JSClassDef* cls,
+        JSClassFinalizer *finalizer,
+        JSClassGCMark* gc_mark,
+        JSClassCall* call,
+        JSClassExoticMethods* exotic
+    )
+    void CYJS_InitalizeSettings(
+        JSContext* ctx,
+        bint base_objects,
+        bint date,
+        bint intrinsic_eval,
+        bint regexp_compiler,
+        bint regexp,
+        bint json,
+        bint proxy,
+        bint map_set,
+        bint typed_arrays,
+        bint bigint,
+        bint weak_ref,
+        bint performance,
+        bint dom_exception,
+        bint promise
+    )
 
 cdef class JSError(Exception):
     @staticmethod
@@ -54,6 +80,31 @@ cdef class MemoryUsage:
 
 
 
+# void promise_hook_cb(JSContext *ctx, JSPromiseHookType type,
+#     JSValue promise, JSValue parent_promise, void *opaque):
+
+# Used for hooking a promise callback without triggering a deref
+# This class is not exactly public nor should it be imported.
+@cython.internal
+cdef class PromiseHook:
+    cdef:
+        object func
+        object exception
+        bint has_exception
+        Runtime rt
+
+    @staticmethod
+    cdef PromiseHook new(Runtime rt, object func)
+
+    cdef void hook(self, JSContext *context, JSPromiseHookType type,
+        JSValue promise, JSValue parent_promise) noexcept
+
+        
+
+
+    
+
+
 
 cdef class Runtime:
     """
@@ -64,13 +115,16 @@ cdef class Runtime:
     """
     cdef:
         JSRuntime* rt
-        # NOTE: This should not utilize a fully public name and 
-        # should be able to be named 
-        # something sneaky and discrete to evade bot detection if 
-        # cyjs is to be used as a Javascript solver. (If done correctly)
-        JSClassDef py_function_class_def
-        JSClassID py_function_id
+        PromiseHook promise_hook
+        bint has_promise_hook
+        # # NOTE: This should not utilize a fully public name and 
+        # # should be able to be named 
+        # # something sneaky and discrete to evade bot detection if 
+        # # cyjs is to be used as a Javascript solver. (If done correctly)
+        # JSClassDef py_function_class_def
+        # JSClassID py_function_id
 
+    
 
 
     cpdef MemoryUsage compute_memory_usage(self)
@@ -88,6 +142,7 @@ cdef class Runtime:
     cpdef void set_max_stack_size(self, size_t max_stack_size)
     cpdef void update_statck_top(self)
 
+    cpdef object set_promise_hook(self, object func)
 
 
 
@@ -100,21 +155,10 @@ cdef class Object:
     cdef void init(self, Context ctx, JSValue value)
     cpdef bytes to_json(self)
 
-# # Maybe planned so that some stuff can be easily shortcutted out or removed
-# # which may result in less crashing...
-# cdef class JSFunction:
-#     cdef:
-#         object func
-#         readonly Context context
-#         JSValue value
-#         JSContext* ctx
-    
-#     @staticmethod
-#     cdef JSFunction new(
-#         Context ctx,
-#         JSValue value,
-#         object func
-#     )
+
+cdef class JSFunction:
+    cdef:
+        readonly Context context
 
 
 
@@ -124,7 +168,7 @@ cdef class Context:
         readonly Runtime runtime
         JSRuntime* rt
         JSContext* ctx
-        
+    
    
     cdef bint has_exception(self)
     cdef JSValue get_exception(self)
@@ -138,14 +182,11 @@ cdef class Context:
         bint backtrace_barrier =*,
         bint promise =*
     )
+    
 
     # For now it will be represented as an Object
     # but in the future it can be represented as a 
     # function the goal of new_function is to call it from
     # ecma rather than from python itself (should be obvious as to why)
     # cpdef Object new_function(self, object func, object name=*)
-
-
-
-
 

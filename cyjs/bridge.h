@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h> // FILE*
 #include <inttypes.h> // PRId64
-
+#include <stdbool.h>
 
 #include "Python.h"
 #include "quickjs.h"
@@ -103,6 +103,17 @@ static const JSMallocFunctions py_malloc_funcs = {
     py__malloc_usable_size,
 };
 
+/* Mainly it is just here for checking internal signals but 
+this might be expanded upon and moved to cython after beta/first release 
+*/
+static int CYJS_SigInterruptHandler(JSRuntime* rt, void* op){
+    return PyErr_CheckSignals();
+}
+
+static JSValue CYJS_ThrowException(JSContext* ctx, const char* msg){
+    return JS_ThrowPlainError(ctx, msg);
+}
+
 /// @brief Creates a new JSRuntime using python memory instead of C's
 /// Heap, for better performance by allowing mimalloc to be utlized 
 /// but also enables collecting from python's own recycle bin.
@@ -112,9 +123,67 @@ static JSRuntime* CYJS_NewRuntime(void* opaque){
     JSRuntime* rt = JS_NewRuntime2(&py_malloc_funcs, opaque);
     /* it's a bit faster to throw an exception here with only needing
     raise when runtime is NULL */
+    
     if (rt == NULL)
         PyErr_NoMemory();
+    
+    /* There is a few reasons as to why we would want to try putting 
+    the interrupt handle here for now and this is mainly to make sure that if or when a user hits CTRL+c 
+    the program remebers to exit (Will move it to cython after all of the first tests succeed and the library has had it's first release) */
+ 
+    /* the interrupt handler has a NULL Opaque for right now because we can ignore needing it. */
+    JS_SetInterruptHandler(rt, CYJS_SigInterruptHandler, NULL);
     return rt;
+}
+
+
+
+
+/* It didn't feel pratical to bring this all to cython */
+static void CYJS_InitalizeSettings(
+    JSContext* ctx,
+    bool base_objects,
+    bool date,
+    bool intrinsic_eval,
+    bool regexp_compiler,
+    bool regexp,
+    bool json,
+    bool proxy,
+    bool map_set,
+    bool typed_arrays,
+    bool bigint,
+    bool weak_ref,
+    bool performance,
+    bool dom_exception,
+    bool promise
+){
+    if (base_objects)
+        JS_AddIntrinsicBaseObjects(ctx);
+    if (date) 
+        JS_AddIntrinsicDate(ctx);
+    if (intrinsic_eval)
+        JS_AddIntrinsicEval(ctx);
+    if (regexp)
+        JS_AddIntrinsicRegExp(ctx);
+    if (json)
+        JS_AddIntrinsicJSON(ctx);
+    if (proxy)
+        JS_AddIntrinsicProxy(ctx);
+    if (map_set)
+        JS_AddIntrinsicMapSet(ctx);
+    if (typed_arrays)
+        JS_AddIntrinsicTypedArrays(ctx);
+    if (promise)
+        JS_AddIntrinsicPromise(ctx);
+    if (bigint)
+        JS_AddIntrinsicBigInt(ctx);
+    if (weak_ref)
+        JS_AddIntrinsicWeakRef(ctx);
+    if (dom_exception)
+        JS_AddIntrinsicDOMException(ctx);
+    if (performance)
+        JS_AddPerformance(ctx);
+
 }
 
 
@@ -228,9 +297,28 @@ cyjs_release_buffer(Py_buffer *view) {
 }
 
 
-JSValue CYJS_ThrowException(JSContext* ctx, const char* msg){
-    return JS_ThrowPlainError(ctx, msg);
-}
+
+
+/// @brief Initalizes JSClassDef with help from a PyObject
+/// @param obj The Python Object/Class or Cython C Extension object to intialize
+/// @param cls The JSClass Definition
+/// @param finalizer Optional Callback
+/// @param gc_mark Optional Callback
+/// @param call Optional Callback
+// void CYJS_CreateJSClassDef(
+//     PyObject* obj, 
+//     JSClassDef* cls, 
+//     JSClassFinalizer *finalizer,
+//     JSClassGCMark* gc_mark,
+//     JSClassCall* call,
+// ){
+//     /* XXX: Cython is not very capable of this but is perfectly acceptable in C... */
+//     cls->class_name = Py_TYPE(obj)->tp_name;
+//     cls->finalizer = finalizer;
+//     cls->gc_mark = gc_mark;
+//     cls->call = call;
+
+// }
 
 
 #ifdef __cplusplus

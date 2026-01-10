@@ -201,7 +201,7 @@ cdef extern from "quickjs.h" nogil:
     ctypedef JSValue (*JSClassCall)(JSContext*, JSValue, JSValue, int, JSValue*, int) noexcept with gil
     ctypedef struct JSClassDef:
         const char* class_name
-        JSClassFinalizer* finalizer
+        JSClassFinalizer finalizer
         JSClassGCMark* gc_mark
         JSClassCall* call
         JSClassExoticMethods* exotic
@@ -409,7 +409,7 @@ cdef extern from "quickjs.h" nogil:
         JS_PROMISE_HOOK_AFTER = 2
         JS_PROMISE_HOOK_RESOLVE = 3
     
-    ctypedef void (*JSPromiseHook)(JSContext*, JSPromiseHookType, JSValue, JSValue, void*)
+    ctypedef void (*JSPromiseHook)(JSContext*, JSPromiseHookType, JSValue, JSValue, void*) noexcept with gil
     void JS_SetPromiseHook(JSRuntime*, JSPromiseHook, void*)
     ctypedef void (*JSHostPromiseRejectionTracker)(JSContext*, JSValue, JSValue, bint, void*)
     void JS_SetHostPromiseRejectionTracker(JSRuntime*, JSHostPromiseRejectionTracker*, void*)
@@ -547,4 +547,12 @@ cdef extern from "quickjs.h" nogil:
     int JS_GPN_SYMBOL_MASK
     int JS_GPN_PRIVATE_MASK
     int JS_GPN_ENUM_ONLY
+
+    int JS_PROP_CONFIGURABLE
+    int JS_PROP_WRITABLE
+    int JS_PROP_ENUMERABLE
+    int JS_PROP_C_W_E
+    int JS_PROP_LENGTH
+    int JS_PROP_NORMAL
+    int JS_PROP_GETSET
 
