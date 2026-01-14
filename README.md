@@ -121,12 +121,11 @@ for eatch to ensure it works correctly. I may be uploading this library to pypi 
 
 - [ ] Reporting and fixing bugs.
 
-- [ ] JSCFunction I haven't figured out a good solution for this one just yet since I'm trying to limit the number of cdef classes to keep the code small and easy to compile. We need a way to bind an opaque Python Object and trying the old quickjs method seems to trigger crashes (believe me when I say I tried doing that already).
-
 - [ ] JSClass cdef class extension that can be subclassed in python and cython along with the hooks for all the JSClassExoticMethods (we need an approch to passing off a cdef class as an opaque value which I have not figured out how to do yet)
     - [ ] JSClassFinalizer Hook
     - [ ] JSClassGCMark Hook
     - [ ] A safe approch for handling JSClass to python object conversion and vice versa (if possible)
+
 
 
 
