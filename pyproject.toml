@@ -24,3 +24,6 @@ packages = ['cyjs']
 
 [tool.setuptools.dynamic]
 version = {attr = "cyjs.__version__"}
+
+[project.urls]
+    repository = "https://github.com/Vizonex/cyjs.git"
