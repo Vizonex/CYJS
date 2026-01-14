@@ -1,4 +1,4 @@
-<img src="cyjs-logo.png" style="width: 30%;"/>
+<img src="https://raw.githubusercontent.com/Vizonex/cyjs/main/cyjs-logo.png" style="width: 30%;"/>
 
 ------
 # CYJS
@@ -127,5 +127,6 @@ for eatch to ensure it works correctly. I may be uploading this library to pypi 
     - [ ] JSClassFinalizer Hook
     - [ ] JSClassGCMark Hook
     - [ ] A safe approch for handling JSClass to python object conversion and vice versa (if possible)
+
 
 
