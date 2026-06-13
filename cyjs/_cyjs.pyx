@@ -58,7 +58,8 @@ cdef class JSError(Exception):
 
         if stack_cstring != NULL:
             JS_FreeCString(ctx, stack_cstring)
-            JS_FreeValue(ctx, stack)
+            if stack != JS_NULL:
+                JS_FreeValue(ctx, stack)
 
         JS_FreeValue(ctx, value)
         return err
