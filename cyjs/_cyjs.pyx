@@ -58,7 +58,8 @@ cdef class JSError(Exception):
 
         if stack_cstring != NULL:
             JS_FreeCString(ctx, stack_cstring)
-            JS_FreeValue(ctx, stack)
+            if not JS_IsNull(stack):
+                JS_FreeValue(ctx, stack)
 
         JS_FreeValue(ctx, value)
         return err
@@ -1438,9 +1439,9 @@ cdef int py_to_js_str(JSContext* ctx, object obj, JSValue* value):
 
 cdef object jsv_to_str(JSContext* ctx, JSValue value):
     cdef size_t len
-    cdef const char* cstr = JS_ToCStringLen(ctx, &len , value)
+    cdef const char* cstr = JS_ToCString(ctx, value)
     try:
-        return PyUnicode_FromStringAndSize(cstr, <Py_ssize_t>len)
+        return PyUnicode_FromString(cstr)
     finally:
         JS_FreeCString(ctx, cstr)
 
@@ -1459,6 +1460,12 @@ cdef class CancelledError(Exception):
 cdef class InvalidStateError(Exception):
     """Promise on inavlid state"""
 
+
+# TODO: Coroutine support has been figured as 
+# an optimization idea for uvloop/winloop
+# This practice would smart to add here.
+# if you want an idea on how this coroutine hack works
+# SEE: https://gist.github.com/Vizonex/5196ae5fc7f2287df6a6dec8b37edc37
 
 cdef class Promise(Object):
     cdef:
@@ -1614,7 +1621,17 @@ cdef object to_python(JSContext* ctx, JSValue value):
         JS_FreeValue(ctx, value)
         return None
     elif tag == JS_TAG_STRING:
-        ret = jsv_to_str(ctx, value)
+        # XXX: Unicode has this little annoyance
+        # where Possibly it's doing a douple free
+        # causing a Use-After-Free Scenario Duping
+        # The value seems to fix it. Further investigation
+        # on if this memory leaks or not may be needed.
+
+        # SEE: https://github.com/Vizonex/CYJS/issues/13
+        
+        # it should be noted this bug has been a 5 month long 
+        # headache for the developer of this library 
+        ret = jsv_to_str(ctx, JS_DupValue(ctx, value))
         JS_FreeValue(ctx, value)
         return ret
     elif tag == JS_TAG_FLOAT64:
@@ -1625,7 +1642,6 @@ cdef object to_python(JSContext* ctx, JSValue value):
         ret = PyBool_FromLong(JS_VALUE_GET_INT(value))
         JS_FreeValue(ctx, value)
         return ret
-
 
     # Unimplemented (Hold onto value so we can free it up later)
     return jsv_to_object(ctx, value)

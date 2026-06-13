@@ -7,10 +7,16 @@ from cyjs._cyjs import Context
 def add(a: int, b: int) -> int:
     return a + b
 
+def format_it(f: str):
+    return f"{f} with data!"
 
-# TODO:
-# def peform_raise():
-#     raise RuntimeError("I'm a teapot")
+def test_cclousre_bug_13(ctx: Context) -> None:
+    """
+    SEE: https://github.com/Vizonex/CYJS/issues/13
+    """
+    ctx.set("format_it", ctx.add_function(format_it, "format_it"))
+    result = ctx.eval("globalThis.format_it(\"item\")")
+    assert result == "item with data!"
 
 
 def test_cclosure_eval(ctx: Context) -> None:
