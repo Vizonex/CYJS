@@ -13,7 +13,6 @@ quickjs_sources = list(
     map(
         str,
         [
-            QUICKJS_DIR / "cutils.c",
             QUICKJS_DIR / "dtoa.c",
             QUICKJS_DIR / "libregexp.c",
             QUICKJS_DIR / "libunicode.c",
