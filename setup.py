@@ -151,7 +151,7 @@ def pyx_ext(file: str):
     return Extension(
         f"cyjs.{file}",
         [f"cyjs/{file}.pyx"] + quickjs_sources,
-        include_dirs=["quickjs"],
+        include_dirs=["vendor"],
         define_macros=DEFINE_MACROS,
         # NOTE: You will need to fix stdalign.h like I did if yours didn't exist - Vizonex
         extra_compile_args=EXTRA_COMPILE_ARGS,
