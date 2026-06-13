@@ -7,7 +7,7 @@ import sys
 use_system_lib = bool(int(os.environ.get("QUICKJS_USE_SYSTEM_LIB", 0)))
 
 
-QUICKJS_DIR = Path("quickjs")
+QUICKJS_DIR = Path("vendor")
 
 quickjs_sources = list(
     map(
