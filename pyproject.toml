@@ -9,9 +9,10 @@ authors = [
 requires-python = ">=3.10"
 dependencies = []
 
+
 [tool.cibuildwheel]
 build-frontend = "build"
-enable = ["cpython-freethreading"]
+# enable = ["cpython-freethreading"]
 
 
 [build-system]
