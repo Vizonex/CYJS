@@ -14,10 +14,12 @@ def test_new_class(rt: Runtime) -> None:
     assert js_cls.type == X
     assert js_cls.runtime == rt
 
+
 class Point:
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
+
 
 def test_new_class_with_init(ctx: Context) -> None:
     ctx.add_class(ctx.runtime.new_class(Point))
@@ -27,11 +29,6 @@ def test_new_class_with_init(ctx: Context) -> None:
 
 
 def test_new_class_with_init_exception(ctx: Context) -> None:
-    class Point:
-        def __init__(self, x: int, y: int):
-            self.x = x
-            self.y = y
-
     ctx.add_class(ctx.runtime.new_class(Point))
     with pytest.raises(TypeError):
         # Would be the same as Point(1) in python but new syntax because it allocates memory
