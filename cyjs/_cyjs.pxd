@@ -370,3 +370,6 @@ cdef class Context:
         JSClass js_cls
     )
 
+    # Privated away from python, it's just a fancy
+    # little shortcut
+    cdef void free_value(self, JSValue value)

@@ -264,6 +264,7 @@ class Context:
         backtrace_barrier: bool = ...,
         promise: bool = ...,
     ) -> Any: ...
+
     def add_class(self, js_cls: JSClass[Any]):
         """
         binds a JSClass Globally to globalThis
@@ -272,6 +273,19 @@ class Context:
             attribute of this context \
             as a shortcut and calling `runtime.new_class(...)` beforehand
         """
+    
+    def set_script_arguments(self, *args: str):
+        """adds script arguments simillar to js_std_add_helpers however
+        it only sends in the "scriptArgs" data, if empty
+        this will be an empty array."""
+
+    def add_std_print_handlers(self):
+        """
+        implements console printing functions.
+        """
+    
+    def add_std_helpers(self, *args):
+        """functions the same as js_std_add_helpers."""
 
 class CancelledError(Exception):
     """Promise was rejected"""

@@ -17,6 +17,7 @@ quickjs_sources = list(
             QUICKJS_DIR / "libregexp.c",
             QUICKJS_DIR / "libunicode.c",
             QUICKJS_DIR / "quickjs.c",
+            QUICKJS_DIR / "quickjs-libc.c"
         ],
     )
 )

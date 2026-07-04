@@ -162,7 +162,7 @@ cdef extern from "quickjs.h" nogil:
     void JS_ComputeMemoryUsage(JSRuntime*, JSMemoryUsage*)
     void JS_DumpMemoryUsage(FILE*, JSMemoryUsage*, JSRuntime*)
     
-    # Pull request for this one is pending: SEE: https://github.com/quickjs-ng/quickjs/pull/1284
+    # Pull request for this one is pending: SEE: https:#github.com/quickjs-ng/quickjs/pull/1284
     # ctypedef int (*JS_MemoryUsageCB)(void* opaque, const char* data, size_t data_len) noexcept with gil
     # int JS_WriteMemoryUsage(JS_MemoryUsageCB cb, const JSMemoryUsage *s, JSRuntime *rt, void* opaque)
     JSAtom JS_NewAtomLen(JSContext*, const char*, size_t)
@@ -558,6 +558,68 @@ cdef extern from "quickjs.h" nogil:
     int JS_PROP_NORMAL
     int JS_PROP_GETSET
 
+
+ctypedef JSRuntime *(*runtime_func)()
+ctypedef JSContext *(*context_func)(JSRuntime *rt)
+
+cdef extern from "quickjs-libc.h":
+    ctypedef uint8_t *JSLoadFileFunc(JSContext *ctx, size_t *pbuf_len,
+                                const char *filename)
+
+    JSModuleDef *js_init_module_std(
+        JSContext *ctx,
+        const char *module_name
+    )
+    JSModuleDef *js_init_module_os(
+        JSContext *ctx,
+        const char *module_name
+    )
+    JSModuleDef *js_init_module_bjson(
+        JSContext *ctx,
+        const char *module_name
+    )
+    void js_std_add_helpers(JSContext *ctx, int argc, char **argv)
+    int js_std_loop(JSContext *ctx)
+    int js_std_loop_once(JSContext *ctx)
+    int js_std_poll_io(JSContext *ctx, int timeout_ms)
+    JSValue js_std_await(JSContext *ctx, JSValue obj)
+    void js_std_init_handlers(JSRuntime *rt)
+    void js_std_free_handlers(JSRuntime *rt)
+    void js_std_dump_error(JSContext *ctx)
+    uint8_t *js_load_file(JSContext *ctx, size_t *pbuf_len,
+                                         const char *filename)
+    int js_module_set_import_meta(JSContext *ctx, JSValue func_val,
+                                                 bool use_realpath, bool is_main)
+    JSModuleDef *js_module_loader(JSContext *ctx,
+                                                 const char *module_name, void *opaque,
+                                                 JSValue attributes)
+    # like js_module_loader but does not load .so objects and the file reader
+    # is pluggable; js_module_loader is implemented in terms of js_module_load
+    JSModuleDef *js_module_load(JSContext *ctx, const char *module_name,
+                                               void *opaque, JSValue attributes,
+                                               JSLoadFileFunc *load_file)
+    int js_module_check_attributes(JSContext *ctx, void *opaque,
+                                                  JSValue attributes)
+    void js_std_eval_binary(JSContext *ctx, const uint8_t *buf,
+                                           size_t buf_len, int flags)
+    void js_std_promise_rejection_tracker(JSContext *ctx,
+                                                         JSValue promise,
+                                                         JSValue reason,
+                                                         bool is_handled,
+                                                         void *opaque)
+    # Defaults to JS_NewRuntime, no-op if compiled without worker support.
+    # Call before creating the first worker thread.
+    void js_std_set_worker_new_runtime_func(runtime_func func);
+    # Defaults to JS_NewContext, no-op if compiled without worker support.
+    # Call before creating the first worker thread.
+    
+    void js_std_set_worker_new_context_func(context_func func)
+
+
+
+
     
     
+
+
     
