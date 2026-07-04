@@ -65,7 +65,8 @@ EXTRA_IGNORE_COMPILE_ARGS = (
         "-Wno-unused-result",
         "-Wno-stringop-truncation",
         "-Wno-array-bounds",
-        "-fvisibility=hidden"
+        "-fvisibility=hidden",
+        "-D_DEFAULT_SOURCE"
     ]
 )
 
