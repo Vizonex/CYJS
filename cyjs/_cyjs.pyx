@@ -1413,6 +1413,31 @@ cdef class Context: # type: ignore
 
         return to_python(self.ctx, obj)
 
+    cdef void free_value(self, JSValue value):
+        JS_FreeValue(self.ctx, value)
+
+    def set_script_arguments(self, *args):
+        """adds script arguments simillar to js_std_add_helpers however
+        it only sends in the "scriptArgs" data, if empty
+        this will be an empty array."""
+        self.set("scriptArgs", list(args))
+
+    def add_std_print_handlers(self):
+        """
+        implements console printing functions.
+        """
+        # NOTE: We can ignore argc, argv we have a faster method
+        # for that...
+        js_std_add_helpers(self.ctx, 0, NULL)
+    
+    def add_std_helpers(self, *args):
+        """functions the same as js_std_add_helpers."""
+        js_std_add_helpers(self.ctx, 0, NULL)
+        self.set("scriptArgs", list(args))
+        
+
+
+
 
 
     # TODO: Soon as I figure out how to make callbacks and promises work...
