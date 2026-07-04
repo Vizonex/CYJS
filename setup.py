@@ -171,7 +171,7 @@ class quickjs_build_ext(build_ext):
 if __name__ == "__main__":
     setup(
         ext_modules=[
-            Extension("cyjs._cyjs", ["cyjs/_cyjs.pyx"]),
+            Extension("cyjs._cyjs", ["cyjs/_cyjs.pyx"], extra_compile_args=["-fPIC"] if sys.platform == "linux" else []),
         ],
         cmdclass={"build_ext": quickjs_build_ext},
     )
