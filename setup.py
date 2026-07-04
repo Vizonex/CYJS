@@ -67,6 +67,7 @@ class quickjs_build_ext(build_ext):
 
     def build_extensions(self):
         if sys.platform == "linux":
+            self.add_include_dir(os.path.join("quickjs"))
             build_ext.build_extensions(self)
             return
 
