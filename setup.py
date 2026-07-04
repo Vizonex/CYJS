@@ -19,6 +19,7 @@ quickjs_sources = list(
             QUICKJS_DIR / "libregexp.c",
             QUICKJS_DIR / "libunicode.c",
             QUICKJS_DIR / "quickjs.c",
+            QUICKJS_DIR / "quickjs-libc.c"
         ],
     )
 )
@@ -64,6 +65,9 @@ EXTRA_IGNORE_COMPILE_ARGS = (
         "-Wno-unused-result",
         "-Wno-stringop-truncation",
         "-Wno-array-bounds",
+        "-fvisibility=hidden",
+        "-D_DEFAULT_SOURCE",
+        "-D_GNU_SOURCE"
     ]
 )
 
