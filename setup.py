@@ -67,7 +67,6 @@ class quickjs_build_ext(build_ext):
 
     def build_extensions(self):
         if sys.platform == "linux":
-            self.add_include_dir(os.path.join("quickjs"))
             build_ext.build_extensions(self)
             return
 
@@ -209,6 +208,7 @@ if __name__ == "__main__":
                 "cyjs._cyjs",
                 ["cyjs/_cyjs.pyx"] + QUICKJS_SOURCES_LINUX_WORKAROUND,
                 extra_compile_args=QUICKJS_ARGS_LINUX_WORKAROUND,
+                include_dirs=["quickjs"]
             ),
         ],
         cmdclass={"build_ext": quickjs_build_ext},
