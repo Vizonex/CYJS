@@ -105,7 +105,7 @@ class quickjs_build_ext(build_ext):
 
         self.extensions[0].extra_objects = [lib_path]
 
-        self.add_include_dir(os.path.join(install_dir, "include"))
+        # self.add_include_dir(os.path.join(install_dir, "include"))
         self.add_include_dir(quickjs_ng_vendor)
 
         build_ext.build_extensions(self)
@@ -171,7 +171,7 @@ class quickjs_build_ext(build_ext):
 if __name__ == "__main__":
     setup(
         ext_modules=[
-            Extension("cyjs._cyjs", ["cyjs/_cyjs.pyx"], extra_compile_args=["-fPIC"] if sys.platform == "linux" else []),
+            Extension("cyjs._cyjs", ["cyjs/_cyjs.pyx"]),
         ],
         cmdclass={"build_ext": quickjs_build_ext},
     )
