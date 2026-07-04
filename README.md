@@ -15,6 +15,49 @@ ECMAScript interpreter for Cython & Python built for
 - Being a good companion alongside [selectolax](https://github.com/rushter/selectolax) or beautiful-soup the choice is yours...
 - License friendly, after abandoning pyduktape due to the backend no longer being maintained but also having a pretty poor license all together, It inspired me to try something new for a change that could run newer HTML5 Javascript for any puzzle that is thrown your way.
 
+## Installation
+Installation of cyjs is pretty simplistic and you can get the released version from pypi
+```
+pip install cyjs
+```
+
+### Using Unreleased Development Versions
+If your planning to contribute or want in on anything newly
+added you can clone the github repo there is however one 
+dependency needed which is CMake, it was chosen to keep the 
+setuptools section cleansed and allow the quickjs-ng contributors to help us with those sections. 
+You can install cmake using pip if you need something lazy and quick. It's recommended you install cmake globally if you don't have it yet.
+
+```
+pip install cmake
+```
+
+### UV (Recommended)
+After getting cmake it is recommended to use uv to build and
+install the cyjs library in development mode
+
+```
+uv sync
+```
+Otherwise you can try this approch know that you need pytest if your planning to test anything locally.
+
+1.
+```
+uv venv
+```
+
+2.
+```
+uv pip install -e .
+```
+
+### Alternative Route
+
+```
+pip install -e .
+```
+
+
 ## Quick Example
 
 

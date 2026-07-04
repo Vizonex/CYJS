@@ -4,11 +4,12 @@ from cpython.buffer cimport PyObject_CheckBuffer
 from cpython.bytes cimport PyBytes_FromStringAndSize
 from cpython.exc cimport (PyErr_CheckSignals, PyErr_NoMemory, PyErr_Occurred,
                           PyErr_SetObject, PyErr_WriteUnraisable)
-from cpython.list cimport PyList_AsTuple
+from cpython.list cimport PyList_AsTuple, PyList_GET_SIZE
 from cpython.long cimport PyLong_AsLongAndOverflow, PyLong_FromString
 from cpython.mem cimport PyMem_Free, PyMem_Malloc, PyMem_Realloc
-from cpython.object cimport PyObject_CallObject, PyObject_Str, Py_TYPE, PyObject_GetAttr, PyObject_SetAttr, PyObject_HasAttrString
-from cpython.list cimport PyList_GET_SIZE
+from cpython.object cimport (Py_TYPE, PyObject_CallObject, PyObject_GetAttr,
+                             PyObject_HasAttrString, PyObject_SetAttr,
+                             PyObject_Str)
 from cpython.tuple cimport PyTuple_GET_SIZE
 from cpython.type cimport PyType_Check
 from cpython.unicode cimport PyUnicode_FromString, PyUnicode_FromStringAndSize
