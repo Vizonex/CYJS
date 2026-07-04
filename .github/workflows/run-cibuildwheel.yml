@@ -1,4 +1,7 @@
-# Borrowing from pycares until unless we need to adapt to cython...
+# borrowing from pycares again due to the complexity of building wheels being rather annoying.
+# It does have a better concurrency system for building since the time it takes to build 
+# Larger C Libraries can get very time consuming. Really a users should not be sitting for 
+# More than 20 Minutes just to figure out that a workflow has failed :/
 
 on:
   workflow_call:
@@ -15,43 +18,63 @@ on:
         type: boolean
 
 jobs:
+  generate-wheels-matrix:
+    # PYCARES NOTE: Create a matrix of all architectures & versions to build.
+    # This enables the next step to run cibuildwheel in parallel.
+    # From https://iscinumpy.dev/post/cibuildwheel-2-10-0/#only-210
+    name: Generate wheels matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.set-matrix.outputs.include }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install cibuildwheel
+      # PYCARES NOTE: Nb. keep cibuildwheel version pin consistent with job below
+        run: pipx install cibuildwheel==3.2.1
+      - id: set-matrix
+        run: |
+          MATRIX=$(
+            {
+              cibuildwheel --print-build-identifiers --platform linux \
+              | jq -nRc '{"only": inputs, "os": "ubuntu-latest"}' \
+              && cibuildwheel --print-build-identifiers --platform macos --archs arm64 \
+              | jq -nRc '{"only": inputs, "os": "macos-15"}' \
+              && cibuildwheel --print-build-identifiers --platform macos --archs x86_64 \
+              | jq -nRc '{"only": inputs, "os": "macos-15-intel"}' \
+              && cibuildwheel --print-build-identifiers --platform windows --archs AMD64 \
+              | jq -nRc '{"only": inputs, "os": "windows-latest"}' \
+              && cibuildwheel --print-build-identifiers --platform windows --archs ARM64 \
+              | jq -nRc '{"only": inputs, "os": "windows-11-arm"}'
+            } | jq -sc
+          )
+          echo "include=$MATRIX" >> $GITHUB_OUTPUT
+
   build_wheels:
-    name: Build wheels for ${{ matrix.name }}
+    name: Build wheels for ${{ matrix.only }}
     runs-on: ${{ matrix.os }}
+    needs: generate-wheels-matrix
     strategy:
       fail-fast: ${{ inputs.fail-fast }}
       matrix:
-        include:
-          - name: Windows
-            os: windows-latest
-          - name: Windows arm64
-            os: windows-11-arm
-          # SEE: 
-          #  - https://github.com/scikit-tda/ripser.py/pull/213
-          #  - https://github.com/pypa/gh-action-pypi-publish/issues/215
-          # - name: macOS x86_64
-          #   os: macos-14
-          - name: macOS arm64
-            os: macos-latest
-          - name: Linux
-            os: ubuntu-latest
+        include: ${{ fromJson(needs.generate-wheels-matrix.outputs.include) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Set up QEMU
         if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: all
       - name: Enable CPython prerelease
         if: ${{ inputs.prerelease-pythons }}
         run: echo "CIBW_ENABLE=cpython-prerelease" >> $GITHUB_ENV
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.1
+        uses: pypa/cibuildwheel@v4.1.0
         with:
+          only: ${{ matrix.only }}
           output-dir: dist
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels-${{ matrix.only }}
           path: dist/*.whl
