@@ -46,7 +46,6 @@ class quickjs_build_ext(build_ext):
 
         if not cmake_cmd:
             raise RuntimeError("cyjs requires cmake")
-
         quickjs_ng_vendor = os.path.join("quickjs")
         build_temp = os.path.abspath(os.path.join(self.build_temp, "qjs-build"))
         install_dir = os.path.abspath(os.path.join(self.build_temp, "qjs-install"))
@@ -59,7 +58,9 @@ class quickjs_build_ext(build_ext):
             f"-DCMAKE_INSTALL_PREFIX={install_dir}",
             "-DQJS_BUILD_LIBC=ON",  # We do need LIBC there are plans to implement it's things
             "-DQJS_BUILD_CLI=OFF",  # We don't need CLI it wastes time to make it.
+            "-DBUILD_SHARED_LIBS=false",
         ]
+
 
         print(f"Configuring quickjs-ng with CMake in {build_temp}")
         subprocess.check_call(
