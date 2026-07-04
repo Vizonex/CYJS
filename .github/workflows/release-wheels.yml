@@ -8,7 +8,7 @@ on:
       - published
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -19,21 +19,40 @@ jobs:
 
   build_sdist:
     uses: ./.github/workflows/run-sdist.yml
+  
+  # Little fun fact: I added this part not just to my own libraries but I added
+  # This feature to pycares to upload the wheels made to the releases pages
+  # incase for some strange reason pypi decides it wants to fail.
+  upload_github:
+    needs: [build_wheels, build_sdist]
+    if: github.event_name == 'release' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: dist/*
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
     if: github.event_name == 'release' && github.event.action == 'published'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
       - run: ls -lR dist
       - name: Upload to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        # with:
-        #   user: __token__
-        #   # NOTE: Changed to how I usually got about this. 
-        #   # I will remove after first release is taken care of...
-        #   password: ${{ secrets.PYPI_API_TOKEN }}
+        with:
+          user: __token__
+          # NOTE: be sure to register a PYPI_API_TOKEN with your project.
+          # Once uploaded the first time swap to trused releases if at all possible.
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
