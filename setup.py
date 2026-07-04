@@ -8,6 +8,35 @@ from setuptools.command.build_ext import build_ext
 
 use_system_lib = bool(int(os.environ.get("QUICKJS_USE_SYSTEM_LIB", 0)))
 
+# Alternate workaround for linux systems like manylinux_x86 builds
+if sys.platform == "linux":
+    QUICKJS_SOURCES_LINUX_WORKAROUND = list(
+        map(
+            str,
+            [
+                "quickjs/dtoa.c",
+                "quickjs/libregexp.c",
+                "quickjs/libunicode.c",
+                "quickjs/quickjs.c",
+                "quickjs/quickjs-libc.c",
+            ],
+        )
+    )
+
+    QUICKJS_ARGS_LINUX_WORKAROUND = [
+        "-Wno-implicit-fallthrough",
+        "-Wno-sign-compare",
+        "-Wno-missing-field-initializers",
+        "-Wno-unused-parameter",
+        "-Wno-unused-but-set-variable",
+        "-Wno-unused-result",
+        "-Wno-stringop-truncation",
+        "-Wno-array-bounds",
+    ]
+else:
+    QUICKJS_SOURCES_LINUX_WORKAROUND = []
+    QUICKJS_ARGS_LINUX_WORKAROUND = []
+
 
 class quickjs_build_ext(build_ext):
     # Brought over from winloop since these can be very useful.
@@ -37,6 +66,11 @@ class quickjs_build_ext(build_ext):
         self.compiler.set_include_dirs(dirs)
 
     def build_extensions(self):
+        if sys.platform == "linux":
+            build_ext.build_extensions(self)
+            return
+
+
         if use_system_lib:
             self.compiler.add_library("quickjs-ng")
             build_ext.build_extensions(self)
@@ -60,7 +94,6 @@ class quickjs_build_ext(build_ext):
             "-DQJS_BUILD_CLI=OFF",  # We don't need CLI it wastes time to make it.
             "-DBUILD_SHARED_LIBS=false",
         ]
-
 
         print(f"Configuring quickjs-ng with CMake in {build_temp}")
         subprocess.check_call(
@@ -171,7 +204,11 @@ class quickjs_build_ext(build_ext):
 if __name__ == "__main__":
     setup(
         ext_modules=[
-            Extension("cyjs._cyjs", ["cyjs/_cyjs.pyx"]),
+            Extension(
+                "cyjs._cyjs",
+                ["cyjs/_cyjs.pyx"] + QUICKJS_SOURCES_LINUX_WORKAROUND,
+                extra_compile_args=QUICKJS_ARGS_LINUX_WORKAROUND,
+            ),
         ],
         cmdclass={"build_ext": quickjs_build_ext},
     )
