@@ -66,7 +66,8 @@ EXTRA_IGNORE_COMPILE_ARGS = (
         "-Wno-stringop-truncation",
         "-Wno-array-bounds",
         "-fvisibility=hidden",
-        "-D_DEFAULT_SOURCE"
+        "-D_DEFAULT_SOURCE",
+        "-D_GNU_SOURCE"
     ]
 )
 
