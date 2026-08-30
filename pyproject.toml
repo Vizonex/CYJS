@@ -7,7 +7,6 @@ authors = [
     { name = "Vizonex", email = "VizonexBusiness@gmail.com" }
 ]
 requires-python = ">=3.10"
-dependencies = []
 
 
 [tool.cibuildwheel]
@@ -28,3 +27,8 @@ version = {attr = "cyjs.__version__"}
 
 [project.urls]
     repository = "https://github.com/Vizonex/cyjs.git"
+
+[project.optional-dependencies]
+cli = [
+    "typer>=0.27.2",
+]
