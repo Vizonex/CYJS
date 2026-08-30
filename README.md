@@ -26,7 +26,7 @@ pip install cyjs
 Currently there is a new standalone script if you need
 to run javascript directly like with quickjs although
 it currently is in it's early phases. It currently uses
-[typer]() as a backend (which was developed by the same people who wrote fastapi which is another popular python package).
+[typer](https://typer.tiangolo.com/) as a backend (which was developed by the same people who wrote fastapi which is another popular python package).
 
 ```
 pip install cyjs[cli]
