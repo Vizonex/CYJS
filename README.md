@@ -21,6 +21,27 @@ Installation of cyjs is pretty simplistic and you can get the released version f
 pip install cyjs
 ```
 
+## Running as a Standalone script
+
+Currently there is a new standalone script if you need
+to run javascript directly like with quickjs although
+it currently is in it's early phases. It currently uses
+[typer]() as a backend (which was developed by the same people who wrote fastapi which is another popular python package).
+
+```
+pip install cyjs[cli]
+```
+
+### Using the cli
+
+It should not be difficult although cyjs is still not very mature yet but hopefully the commandline will help to patch a few bugs or make it easier to test different aspects of quickjs-ng.
+
+```
+py -m cyjs -e "console.log('Hello Vizonex');"
+Hello Vizonex
+```
+
+
 ### Using Unreleased Development Versions
 If your planning to contribute or want in on anything newly
 added you can clone the github repo there is however one 
