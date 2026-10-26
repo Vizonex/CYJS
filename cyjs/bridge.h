@@ -132,7 +132,7 @@ static JSRuntime* CYJS_NewRuntime(void* opaque){
     the program remebers to exit (Will move it to cython after all of the first tests succeed and the library has had it's first release) */
  
     /* the interrupt handler has a NULL Opaque for right now because we can ignore needing it. */
-    JS_SetInterruptHandler(rt, CYJS_SigInterruptHandler, NULL);
+    JS_SetInterruptHandler(rt, (JSInterruptHandler*)CYJS_SigInterruptHandler, NULL);
     return rt;
 }
 
