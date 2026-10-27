@@ -323,7 +323,7 @@ class quickjs_build_cmake_ext(build_ext):
 
 
 if __name__ == "__main__":
-    if sys.platform != "linux":
+    if sys.platform == "win32":
         setup(
             ext_modules=[
                 Extension(
